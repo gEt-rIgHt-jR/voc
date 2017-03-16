@@ -394,10 +394,65 @@ public class Python {
                     "As repr(), return a string containing a printable representation of an\n" +
                     "object, but escape the non-ASCII characters in the string returned by\n" +
                     "repr() using \\x, \\u or \\U escapes.  This generates a string similar\n" +
-                    "to that returned by repr() in Python 2.\n"
+                    "to that returned by repr() in Python 2.\n",
+            args = {"object"}
     )
-    public static org.python.types.Str ascii() {
-        throw new org.python.exceptions.NotImplementedError("Builtin function 'ascii' not implemented");
+    public static org.python.types.Str ascii(org.python.Object object) {
+        boolean isString = false;
+        if (object instanceof  org.python.types.Str) {
+            isString = true;
+        }
+        java.lang.String s = ((org.python.types.Str) object.__repr__()).value;
+        StringBuilder resultString = new StringBuilder();
+
+        if (s.length() == 3) {
+            if (s.charAt(0) == 39 && s.charAt(1) == 39 && s.charAt(2) == 39) {
+                return new org.python.types.Str("\"'\"");
+            }
+        }
+
+        for (int i = 0; i < s.length(); i++) {
+            java.lang.Character c = s.charAt(i);
+            if (c < 32) {
+                if (c == 9) {
+                    resultString.append("\\t");
+                    continue;
+                }
+                if (c == 10) {
+                    resultString.append("\\n");
+                    continue;
+                }
+                if (c == 13) {
+                    resultString.append("\\r");
+                    continue;
+                }
+                resultString.append("\\x");
+                resultString.append(java.lang.String.format("%02x", java.lang.Integer.valueOf(c)));
+                continue;
+            }
+            if (c < 127) {
+                if (isString && (c == 39 || c == 92)) {
+                    if (i == 0 || i == s.length() - 1) {
+                    } else {
+                        resultString.append("\\").append(c);
+                        continue;
+                    }
+                }
+                resultString.append(c);
+                continue;
+            }
+            if (c < 256) {
+                resultString.append("\\x");
+                resultString.append(java.lang.Integer.toHexString(c));
+                continue;
+            }
+            if (c <= java.lang.Character.MAX_VALUE) {
+                resultString.append("\\u");
+                resultString.append(java.lang.String.format("%04x", java.lang.Integer.valueOf(c)));
+            }
+        }
+
+        return new org.python.types.Str(resultString.toString());
     }
 
     @org.python.Method(
