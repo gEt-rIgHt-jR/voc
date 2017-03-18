@@ -399,7 +399,7 @@ public class Python {
     )
     public static org.python.types.Str ascii(org.python.Object object) {
         boolean isString = false;
-        if (object instanceof  org.python.types.Str) {
+        if (object instanceof org.python.types.Str) {
             isString = true;
         }
         java.lang.String s = ((org.python.types.Str) object.__repr__()).value;
@@ -412,7 +412,7 @@ public class Python {
         }
 
         for (int i = 0; i < s.length(); i++) {
-            java.lang.Character c = s.charAt(i);
+            char c = s.charAt(i);
             if (c < 32) {
                 if (c == 9) {
                     resultString.append("\\t");
@@ -427,13 +427,12 @@ public class Python {
                     continue;
                 }
                 resultString.append("\\x");
-                resultString.append(java.lang.String.format("%02x", java.lang.Integer.valueOf(c)));
+                resultString.append(java.lang.String.format("%02x", (int) c));
                 continue;
             }
             if (c < 127) {
                 if (isString && (c == 39 || c == 92)) {
-                    if (i == 0 || i == s.length() - 1) {
-                    } else {
+                    if (i != 0 && i != s.length() - 1) {
                         resultString.append("\\").append(c);
                         continue;
                     }
@@ -448,7 +447,7 @@ public class Python {
             }
             if (c <= java.lang.Character.MAX_VALUE) {
                 resultString.append("\\u");
-                resultString.append(java.lang.String.format("%04x", java.lang.Integer.valueOf(c)));
+                resultString.append(java.lang.String.format("%04x", (int) c));
             }
         }
 
