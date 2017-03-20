@@ -398,17 +398,19 @@ public class Python {
             args = {"object"}
     )
     public static org.python.types.Str ascii(org.python.Object object) {
-        boolean isString = false;
+        java.lang.Boolean isString = false;
+        java.lang.Boolean containsSingleQuoteWithoutDoubleQuote = false;
+
         if (object instanceof org.python.types.Str) {
             isString = true;
         }
-        java.lang.String s = ((org.python.types.Str) object.__repr__()).value;
-        StringBuilder resultString = new StringBuilder();
 
-        if (s.length() == 3) {
-            if (s.charAt(0) == 39 && s.charAt(1) == 39 && s.charAt(2) == 39) {
-                return new org.python.types.Str("\"'\"");
-            }
+        java.lang.String s = ((org.python.types.Str) object.__repr__()).value;
+        java.lang.StringBuilder resultString = new StringBuilder();
+
+        if (isString && s.substring(1, s.length() - 1).contains("'") && !s.contains("\"")) {
+            containsSingleQuoteWithoutDoubleQuote = true;
+            s = "\"" + s.substring(1, s.length() - 1) + "\"";
         }
 
         for (int i = 0; i < s.length(); i++) {
@@ -426,16 +428,17 @@ public class Python {
                     resultString.append("\\r");
                     continue;
                 }
-                resultString.append("\\x");
-                resultString.append(java.lang.String.format("%02x", (int) c));
+                resultString.append(java.lang.String.format("\\x%02x", (int) c));
                 continue;
             }
             if (c < 127) {
-                if (isString && (c == 39 || c == 92)) {
-                    if (i != 0 && i != s.length() - 1) {
-                        resultString.append("\\").append(c);
-                        continue;
-                    }
+                if ((c == 92) && isString) {
+                    resultString.append("\\").append(c);
+                    continue;
+                }
+                if ((c == 39) && isString && !containsSingleQuoteWithoutDoubleQuote && i != 0 && i != s.length() - 1) {
+                    resultString.append("\\").append(c);
+                    continue;
                 }
                 resultString.append(c);
                 continue;

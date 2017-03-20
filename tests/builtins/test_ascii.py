@@ -14,6 +14,13 @@ class AsciiTests(TranspileTestCase):
             print(ascii(string))
             """)
 
+    def test_ascii_strings_with_quotes(self):
+        self.assertCodeExecution(r"""
+            for word in ["'", '"', "''''", """""", "'\"\"'",
+                "'\"'\"'\"", '\'"\'"\'"', "I'm using \"quotes\"!", 'I"m using \'quotes\'']:
+                print(ascii(word))
+            """)
+
     def test_ascii_list(self):
         self.assertCodeExecution("""
             print(ascii([1, 2, 3, 4, 5]))
